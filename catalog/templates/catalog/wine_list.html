@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Wine Catalog{% endblock %}
+
+{% block content %}
+<h1>Wine Catalog</h1>
+
+{% if wines %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+        {% for wine in wines %}
+            <div style="border: 1px solid #ddd; padding: 1rem; border-radius: 4px;">
+                <h3><a href="{% url 'catalog:wine_detail' slug=wine.slug %}">{{ wine.name }}</a></h3>
+                <p><strong>Type:</strong> {{ wine.wine_type.name }}</p>
+                <p><strong>Country:</strong> {{ wine.country.name }}</p>
+                <p><strong>Year:</strong> {{ wine.year }}</p>
+                <p><strong>Price:</strong> ${{ wine.price }}</p>
+                {% if wine.in_stock %}
+                    <p style="color: green;">In stock: {{ wine.stock_quantity }}</p>
+                {% else %}
+                    <p style="color: red;">Out of stock</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No wines available at the moment.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ wine.name }} - Wine Marketplace{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px;">
+    <h1>{{ wine.name }} ({{ wine.year }})</h1>
+
+    <div style="margin: 2rem 0;">
+        <p><strong>Type:</strong> {{ wine.wine_type.name }}</p>
+        <p><strong>Country:</strong> {{ wine.country.name }}</p>
+        <p><strong>Year:</strong> {{ wine.year }}</p>
+        <p><strong>Price:</strong> ${{ wine.price }}</p>
+        <p><strong>Volume:</strong> {{ wine.volume_ml }}ml</p>
+        {% if wine.alcohol_content %}
+            <p><strong>Alcohol:</strong> {{ wine.alcohol_content }}%</p>
+        {% endif %}
+
+        {% if wine.in_stock %}
+            <p style="color: green; font-weight: bold;">In stock: {{ wine.stock_quantity }} bottles</p>
+        {% else %}
+            <p style="color: red; font-weight: bold;">Out of stock</p>
+        {% endif %}
+    </div>
+
+    <div style="margin: 2rem 0;">
+        <h3>Description</h3>
+        <p>{{ wine.description }}</p>
+    </div>
+
+    {% if wine.average_rating %}
+        <div style="margin: 2rem 0;">
+            <h3>Average Rating: {{ wine.average_rating|floatformat:1 }} / 5</h3>
+        </div>
+    {% endif %}
+
+    {% if reviews %}
+        <div style="margin: 2rem 0;">
+            <h3>Reviews</h3>
+            {% for review in reviews %}
+                <div style="border: 1px solid #ddd; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                    <h4>{{ review.title }} - {{ review.rating }}★</h4>
+                    <p><em>by {{ review.user.username }} on {{ review.created_at|date:"F d, Y" }}</em></p>
+                    <p>{{ review.comment }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <p><a href="{% url 'catalog:wine_list' %}">&larr; Back to catalog</a></p>
+</div>
+{% endblock %}
