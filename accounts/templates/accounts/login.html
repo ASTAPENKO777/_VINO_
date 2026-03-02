@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Вхід — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-section {
+        padding: 3rem 0;
+        display: flex;
+        justify-content: center;
+    }
+    .auth-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        width: 100%;
+        max-width: 440px;
+        box-shadow: var(--shadow-md);
+    }
+    .auth-card h1 {
+        font-size: 1.8rem;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    .auth-subtitle {
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+    .form-group {
+        margin-bottom: 1.2rem;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+        color: var(--text);
+    }
+    .form-group input {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        font-family: 'Inter', sans-serif;
+        transition: border-color var(--transition);
+        background: var(--bg);
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 0.8rem;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+    .auth-footer a {
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card">
+        <h1>Вхід</h1>
+        <p class="auth-subtitle">Увійдіть у свій акаунт</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Ім'я користувача</label>
+                <input type="text" id="username" name="username" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-submit">Увійти</button>
+        </form>
+
+        <div class="auth-footer">
+            Немає акаунту? <a href="{% url 'accounts:register' %}">Зареєструватися</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

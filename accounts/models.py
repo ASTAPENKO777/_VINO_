@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 
 
 class UserProfile(models.Model):
-    """Extended user profile for customers"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -14,8 +13,8 @@ class UserProfile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = 'User Profile'
-        verbose_name_plural = 'User Profiles'
+        verbose_name = 'Профіль користувача'
+        verbose_name_plural = 'Профілі користувачів'
 
     def __str__(self):
         return f"Profile of {self.user.username}"

@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Review)
 def log_review_action(sender, instance, created, **kwargs):
-    """Log review creation and approval"""
     if created:
         logger.info(f"New review created by {instance.user.username} for {instance.wine.name}")
     elif instance.is_approved:
@@ -17,5 +16,4 @@ def log_review_action(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Review)
 def log_review_deletion(sender, instance, **kwargs):
-    """Log review deletion"""
     logger.warning(f"Review deleted by {instance.user.username} for {instance.wine.name}")

@@ -5,42 +5,67 @@ from .models import Order, OrderItem, Cart, CartItem
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ['price', 'get_total_price']
+    readonly_fields = ['item_total']
+    can_delete = False
+
+    @admin.display(description='Сума')
+    def item_total(self, obj):
+        if obj.pk and obj.quantity is not None and obj.price is not None:
+            return f'{obj.get_total_price()} ₴'
+        return '—'
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['order_number', 'user', 'status', 'total', 'created_at']
-    search_fields = ['order_number', 'user__username', 'user__email', 'shipping_address']
-    list_filter = ['status', 'created_at']
+    list_display = ['order_number', 'recipient', 'status', 'total_display', 'created_at']
+    search_fields = ['order_number', 'user__username', 'last_name', 'first_name', 'phone_number']
+    list_filter = ['status']
     readonly_fields = ['order_number', 'created_at', 'updated_at', 'subtotal', 'tax', 'total']
     list_editable = ['status']
+    list_per_page = 25
     inlines = [OrderItemInline]
 
+    fieldsets = (
+        ('Замовлення', {
+            'fields': ('order_number', 'user', 'status')
+        }),
+        ('Отримувач', {
+            'fields': ('last_name', 'first_name', 'patronymic', 'phone_number')
+        }),
+        ('Доставка', {
+            'fields': ('shipping_address', 'shipping_city', 'shipping_country', 'shipping_postal_code')
+        }),
+        ('Сума', {
+            'fields': ('subtotal', 'tax', 'shipping_cost', 'total'),
+            'classes': ('collapse',),
+        }),
+        ('Примітки', {
+            'fields': ('notes',),
+            'classes': ('collapse',),
+        }),
+        ('Системні поля', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
 
-@admin.register(OrderItem)
-class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['order', 'wine', 'quantity', 'price', 'get_total_price']
-    search_fields = ['order__order_number', 'wine__name']
-    list_filter = ['created_at']
+    @admin.display(description='Отримувач')
+    def recipient(self, obj):
+        return obj.recipient_full_name or obj.user.username
 
-
-class CartItemInline(admin.TabularInline):
-    model = CartItem
-    extra = 0
+    @admin.display(description='Сума')
+    def total_display(self, obj):
+        return f'{obj.total} ₴'
 
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ['user', 'get_total_items', 'created_at', 'updated_at']
+    list_display = ['user', 'items_count', 'created_at']
     search_fields = ['user__username']
-    list_filter = ['created_at']
     readonly_fields = ['created_at', 'updated_at']
-    inlines = [CartItemInline]
+
+    @admin.display(description='Товарів')
+    def items_count(self, obj):
+        return obj.get_total_items()
 
 
-@admin.register(CartItem)
-class CartItemAdmin(admin.ModelAdmin):
-    list_display = ['cart', 'wine', 'quantity', 'added_at']
-    search_fields = ['cart__user__username', 'wine__name']
-    list_filter = ['added_at']

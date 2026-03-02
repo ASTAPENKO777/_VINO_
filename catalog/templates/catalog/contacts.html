@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+
+{% block title %}Контакти — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contacts-hero {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        color: white;
+        padding: 5rem 0 4rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .contacts-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(ellipse at center, rgba(201,169,110,0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .contacts-hero h1 {
+        font-size: 3rem;
+        color: white;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    .contacts-hero p {
+        font-size: 1.1rem;
+        color: rgba(255,255,255,0.8);
+        max-width: 560px;
+        margin: 0 auto;
+        line-height: 1.8;
+        position: relative;
+    }
+    .contacts-hero .accent-line {
+        width: 60px;
+        height: 3px;
+        background: var(--accent);
+        margin: 1rem auto;
+    }
+
+    .contacts-section {
+        padding: 5rem 0;
+    }
+    .contacts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: start;
+    }
+
+    /* Info side */
+    .contacts-info h2 {
+        font-size: 1.8rem;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+    .contacts-info .accent-line {
+        width: 50px;
+        height: 3px;
+        background: var(--accent);
+        border-radius: 2px;
+        margin-bottom: 1.5rem;
+    }
+    .contacts-info p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    .contact-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .contact-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.2rem 1.4rem;
+        transition: box-shadow var(--transition), transform var(--transition);
+    }
+    .contact-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+    .contact-card-icon {
+        width: 44px;
+        height: 44px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        color: white;
+        font-size: 1.1rem;
+    }
+    .contact-card-body h4 {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 0.25rem;
+    }
+    .contact-card-body a,
+    .contact-card-body p {
+        font-size: 0.95rem;
+        color: var(--text);
+        font-weight: 500;
+        margin: 0;
+        line-height: 1.5;
+    }
+    .contact-card-body a:hover {
+        color: var(--primary);
+    }
+
+    .hours-card {
+        background: var(--bg-alt);
+        border-radius: var(--radius-lg);
+        padding: 1.4rem;
+        margin-top: 1rem;
+        border: 1px solid var(--border);
+    }
+    .hours-card h4 {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--accent);
+        margin-bottom: 0.8rem;
+    }
+    .hours-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.88rem;
+        color: var(--text-light);
+        padding: 0.3rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-row span:last-child {
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    /* Form side */
+    .contacts-form-wrap h2 {
+        font-size: 1.8rem;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+    .contacts-form-wrap .accent-line {
+        width: 50px;
+        height: 3px;
+        background: var(--accent);
+        border-radius: 2px;
+        margin-bottom: 1.5rem;
+    }
+    .contacts-form-wrap p {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    .contact-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    .form-group label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 0.75rem 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--text);
+        background: var(--card-bg);
+        transition: border-color var(--transition), box-shadow var(--transition);
+        outline: none;
+        resize: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(114,47,55,0.08);
+    }
+    .form-group textarea {
+        min-height: 120px;
+    }
+
+    .form-submit {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .form-submit .btn {
+        padding: 0.85rem 2.2rem;
+        font-size: 0.9rem;
+    }
+    .form-note {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .form-success {
+        background: #E8F5E9;
+        border: 1px solid #A5D6A7;
+        border-radius: var(--radius-lg);
+        padding: 1.5rem 2rem;
+        color: var(--success);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        display: none;
+    }
+    .form-success.visible { display: block; }
+
+    /* Map / CTA */
+    .map-section {
+        background: var(--bg-alt);
+        padding: 4rem 0;
+    }
+    .map-inner {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 3rem;
+        align-items: center;
+    }
+    .map-embed {
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        height: 320px;
+        box-shadow: var(--shadow-sm);
+    }
+    .map-embed iframe {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    .map-cta h3 {
+        font-size: 1.6rem;
+        color: var(--text);
+        margin-bottom: 0.8rem;
+    }
+    .map-cta p {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+    }
+    .map-address {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.7rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem 1.2rem;
+        margin-bottom: 1rem;
+        font-size: 0.88rem;
+        color: var(--text);
+    }
+    .map-address-icon { color: var(--primary); font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    @media (max-width: 900px) {
+        .contacts-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+        .map-inner { grid-template-columns: 1fr; }
+        .map-placeholder { height: 220px; }
+    }
+    @media (max-width: 560px) {
+        .contacts-hero h1 { font-size: 2rem; }
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="contacts-hero">
+    <div class="container">
+        <h1>Контакти</h1>
+        <div class="accent-line"></div>
+        <p>
+            Маєте запитання щодо замовлення або хочете дізнатись більше про наші вина?
+            Ми завжди раді допомогти.
+        </p>
+    </div>
+</section>
+
+<section class="contacts-section">
+    <div class="container">
+        <div class="contacts-grid">
+
+            <!-- Контактна інформація -->
+            <div class="contacts-info">
+                <h2>Зв'яжіться з нами</h2>
+                <div class="accent-line"></div>
+                <p>
+                    Наша команда готова відповісти на будь-які запитання. Обирайте зручний
+                    для вас спосіб зв'язку — ми відповідаємо швидко.
+                </p>
+
+                <div class="contact-cards">
+                    <div class="contact-card">
+                        <div class="contact-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.77a16 16 0 0 0 6.29 6.29l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        </div>
+                        <div class="contact-card-body">
+                            <h4>Телефон</h4>
+                            <a href="tel:+380441234567">+380 (44) 123-45-67</a>
+                        </div>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        </div>
+                        <div class="contact-card-body">
+                            <h4>Електронна пошта</h4>
+                            <a href="mailto:info@vino.ua">info@vino.ua</a>
+                        </div>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <div class="contact-card-body">
+                            <h4>Адреса</h4>
+                            <p>м. Київ, вул. Хрещатик, 1</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hours-card">
+                    <h4>Графік роботи</h4>
+                    <div class="hours-row">
+                        <span>Понеділок — П'ятниця</span>
+                        <span>10:00 — 20:00</span>
+                    </div>
+                    <div class="hours-row">
+                        <span>Субота</span>
+                        <span>11:00 — 18:00</span>
+                    </div>
+                    <div class="hours-row">
+                        <span>Неділя</span>
+                        <span>11:00 — 16:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Форма зворотного зв'язку -->
+            <div class="contacts-form-wrap">
+                <h2>Написати нам</h2>
+                <div class="accent-line"></div>
+                <p>
+                    Заповніть форму нижче й ми зв'яжемось з вами протягом одного робочого дня.
+                </p>
+
+                <div class="form-success" id="formSuccess">
+                    Дякуємо за ваше повідомлення! Ми отримали його та відповімо найближчим часом.
+                </div>
+
+                <form class="contact-form" id="contactForm" novalidate>
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contact-name">Ім'я</label>
+                            <input type="text" id="contact-name" name="name" placeholder="Ваше ім'я" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact-phone">Телефон</label>
+                            <input type="tel" id="contact-phone" name="phone" placeholder="+380 XX XXX XX XX">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact-email">Електронна пошта</label>
+                        <input type="email" id="contact-email" name="email" placeholder="email@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact-subject">Тема</label>
+                        <select id="contact-subject" name="subject">
+                            <option value="">Оберіть тему...</option>
+                            <option value="order">Питання щодо замовлення</option>
+                            <option value="delivery">Доставка та оплата</option>
+                            <option value="return">Повернення товару</option>
+                            <option value="wholesale">Гуртові закупівлі</option>
+                            <option value="other">Інше</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact-message">Повідомлення</label>
+                        <textarea id="contact-message" name="message" placeholder="Опишіть ваше запитання або побажання..." required></textarea>
+                    </div>
+
+                    <div class="form-submit">
+                        <button type="submit" class="btn btn-primary">Надіслати повідомлення</button>
+                        <span class="form-note">Відповідаємо протягом 1 робочого дня</span>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="map-section">
+    <div class="container">
+        <div class="map-inner">
+            <div class="map-embed">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6959244.895925444!2d25.90487298132368!3d48.646630441938136!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40d1d9c154700e8f%3A0x1068488f64010!2z0KPQutGA0LDRl9C90LA!5e1!3m2!1suk!2sua!4v1771780714864!5m2!1suk!2sua" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Карта VINØ"></iframe>
+            </div>
+            <div class="map-cta">
+                <h3>Приходьте до нашого шоуруму</h3>
+                <p>
+                    У нашому київському шоурумі ви можете особисто поспілкуватись з
+                    сомельє, провести дегустацію та підібрати вино під будь-який
+                    захід чи подарунок.
+                </p>
+                <div class="map-address">
+                    <span class="map-address-icon">&#9872;</span>
+                    <div>
+                        <strong>м. Київ, вул. Хрещатик, 1</strong><br>
+                        <span style="color:var(--text-muted);font-size:0.82rem;">Найближча станція метро — Хрещатик</span>
+                    </div>
+                </div>
+                <a href="{% url 'catalog:wine_list' %}" class="btn btn-outline">Переглянути каталог</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('contact-name').value.trim();
+        const email = document.getElementById('contact-email').value.trim();
+        const message = document.getElementById('contact-message').value.trim();
+        if (!name || !email || !message) {
+            alert("Будь ласка, заповніть обов'язкові поля: ім'я, email та повідомлення.");
+            return;
+        }
+        this.style.display = 'none';
+        document.getElementById('formSuccess').classList.add('visible');
+    });
+</script>
+{% endblock %}

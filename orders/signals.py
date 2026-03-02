@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=User)
 def create_user_cart(sender, instance, created, **kwargs):
-    """Create Cart when User is created"""
     if created:
         Cart.objects.create(user=instance)
         logger.info(f"Cart created for user: {instance.username}")
@@ -17,7 +16,6 @@ def create_user_cart(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Order)
 def log_order_status_change(sender, instance, created, **kwargs):
-    """Log order creation and status changes"""
     if created:
         logger.info(f"New order created: {instance.order_number} by {instance.user.username}")
     else:
@@ -26,7 +24,6 @@ def log_order_status_change(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=OrderItem)
 def update_stock_on_order_item_create(sender, instance, created, **kwargs):
-    """Decrease wine stock when order item is created"""
     if created:
         wine = instance.wine
         wine.stock_quantity -= instance.quantity
@@ -36,7 +33,6 @@ def update_stock_on_order_item_create(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=OrderItem)
 def restore_stock_on_order_item_delete(sender, instance, **kwargs):
-    """Restore wine stock when order item is deleted (order cancelled)"""
     wine = instance.wine
     wine.stock_quantity += instance.quantity
     wine.save()

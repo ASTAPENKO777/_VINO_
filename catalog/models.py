@@ -5,13 +5,12 @@ from django.urls import reverse
 
 
 class WineType(models.Model):
-    """Wine type classification (Red, White, Rose, Sparkling, etc.)"""
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        verbose_name = 'Wine Type'
-        verbose_name_plural = 'Wine Types'
+        verbose_name = 'Тип вина'
+        verbose_name_plural = 'Типи вин'
         ordering = ['name']
 
     def __str__(self):
@@ -19,13 +18,12 @@ class WineType(models.Model):
 
 
 class Country(models.Model):
-    """Wine origin countries"""
     name = models.CharField(max_length=100, unique=True)
     code = models.CharField(max_length=3, unique=True, help_text="ISO country code")
 
     class Meta:
-        verbose_name = 'Country'
-        verbose_name_plural = 'Countries'
+        verbose_name = 'Країна'
+        verbose_name_plural = 'Країни'
         ordering = ['name']
 
     def __str__(self):
@@ -33,18 +31,15 @@ class Country(models.Model):
 
 
 class Wine(models.Model):
-    """Main wine product model"""
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=250, unique=True, blank=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     photo = models.ImageField(upload_to='wines/%Y/%m/%d/', blank=True, null=True)
 
-    # Relationships
     wine_type = models.ForeignKey(WineType, on_delete=models.PROTECT, related_name='wines')
     country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name='wines')
 
-    # Wine characteristics
     year = models.IntegerField(
         validators=[MinValueValidator(1900), MaxValueValidator(2026)],
         help_text="Vintage year"
@@ -58,17 +53,15 @@ class Wine(models.Model):
     )
     volume_ml = models.IntegerField(default=750, help_text="Bottle volume in ml")
 
-    # Inventory
     stock_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     is_active = models.BooleanField(default=True, help_text="Available for purchase")
 
-    # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = 'Wine'
-        verbose_name_plural = 'Wines'
+        verbose_name = 'Вино'
+        verbose_name_plural = 'Вина'
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['slug']),
@@ -93,7 +86,6 @@ class Wine(models.Model):
 
     @property
     def average_rating(self):
-        """Calculate average rating from reviews"""
         reviews = self.reviews.filter(is_approved=True)
         if reviews.exists():
             return reviews.aggregate(models.Avg('rating'))['rating__avg']

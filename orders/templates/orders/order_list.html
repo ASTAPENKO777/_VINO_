@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Мої замовлення — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .orders-section {
+        padding: 2rem 0 4rem;
+    }
+    .orders-section h1 {
+        font-size: 2rem;
+        margin-bottom: 0.4rem;
+    }
+    .orders-subtitle {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+
+    .order-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.4rem 1.6rem;
+        margin-bottom: 1rem;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1.2rem 2rem;
+        align-items: center;
+        transition: box-shadow var(--transition);
+    }
+    .order-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .order-icon {
+        width: 52px;
+        height: 52px;
+        background: var(--bg-alt);
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .order-info h3 {
+        font-size: 1rem;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: var(--primary);
+    }
+    .order-meta {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .order-right {
+        text-align: right;
+    }
+    .order-total {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.2rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-pending   { background: #FFF8E1; color: #E65100; }
+    .status-confirmed { background: #E3F2FD; color: #1565C0; }
+    .status-processing{ background: #EDE7F6; color: #4527A0; }
+    .status-shipped   { background: #E8F5E9; color: #2E7D32; }
+    .status-delivered { background: #F1F8E9; color: #33691E; }
+    .status-cancelled { background: #FFEBEE; color: #C62828; }
+
+    .view-btn {
+        display: inline-block;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--primary);
+        font-weight: 500;
+    }
+    .view-btn:hover { color: var(--accent); }
+
+    .empty-orders {
+        text-align: center;
+        padding: 5rem 2rem;
+    }
+    .empty-orders-icon { font-size: 4rem; opacity: 0.2; margin-bottom: 1rem; }
+    .empty-orders h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .empty-orders p { color: var(--text-light); margin-bottom: 1.5rem; }
+
+    @media (max-width: 600px) {
+        .order-card {
+            grid-template-columns: auto 1fr;
+            grid-template-rows: auto auto;
+        }
+        .order-right {
+            grid-column: 1 / -1;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="orders-section">
+        <h1>Мої замовлення</h1>
+        <p class="orders-subtitle">Історія ваших покупок у VINØ</p>
+
+        {% if orders %}
+            {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-icon">&#128722;</div>
+                    <div class="order-info">
+                        <h3>{{ order.order_number }}</h3>
+                        <div class="order-meta">
+                            <span>{{ order.created_at|date:"d.m.Y" }}</span>
+                            <span>{{ order.items.count }} товарів</span>
+                            <span>{{ order.shipping_city }}</span>
+                        </div>
+                    </div>
+                    <div class="order-right">
+                        <div class="order-total">{{ order.total }} ₴</div>
+                        <span class="status-badge status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                        <br>
+                        <a href="{% url 'orders:order_detail' order.order_number %}" class="view-btn">
+                            Деталі →
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-orders">
+                <div class="empty-orders-icon">&#128722;</div>
+                <h2>Замовлень ще немає</h2>
+                <p>Ваша історія замовлень порожня. Почніть з нашого каталогу вин!</p>
+                <a href="{% url 'catalog:wine_list' %}" class="btn btn-primary">Перейти до каталогу</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block title %}Мій профіль — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-section {
+        padding: 2rem 0 4rem;
+    }
+    .profile-section h1 {
+        font-size: 2rem;
+        margin-bottom: 0.4rem;
+    }
+    .profile-subtitle {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* Sidebar */
+    .profile-sidebar {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+    }
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 auto 1rem;
+    }
+    .profile-username {
+        text-align: center;
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+    }
+    .profile-email {
+        text-align: center;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+    .profile-nav {
+        list-style: none;
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+    }
+    .profile-nav li { margin-bottom: 0.3rem; }
+    .profile-nav a {
+        display: block;
+        padding: 0.5rem 0.7rem;
+        border-radius: var(--radius);
+        font-size: 0.88rem;
+        color: var(--text-light);
+        transition: all var(--transition);
+    }
+    .profile-nav a:hover,
+    .profile-nav a.active {
+        background: var(--bg-alt);
+        color: var(--primary);
+        font-weight: 500;
+    }
+
+    /* Main content */
+    .profile-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .profile-card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1.4rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        display: block;
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: var(--text-light);
+        margin-bottom: 0.4rem;
+    }
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.65rem 0.9rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text);
+        background: var(--bg);
+        transition: border-color var(--transition);
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(114,47,55,0.08);
+    }
+    .form-group .errorlist {
+        list-style: none;
+        color: var(--error);
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+    }
+
+    /* Orders table */
+    .orders-table { width: 100%; border-collapse: collapse; }
+    .orders-table th {
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        padding: 0.5rem 0.8rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .orders-table td {
+        padding: 0.8rem 0.8rem;
+        font-size: 0.88rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+    }
+    .orders-table tr:last-child td { border-bottom: none; }
+    .orders-table a { font-weight: 500; }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.18rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.73rem;
+        font-weight: 600;
+    }
+    .status-pending   { background: #FFF8E1; color: #E65100; }
+    .status-confirmed { background: #E3F2FD; color: #1565C0; }
+    .status-processing{ background: #EDE7F6; color: #4527A0; }
+    .status-shipped   { background: #E8F5E9; color: #2E7D32; }
+    .status-delivered { background: #F1F8E9; color: #33691E; }
+    .status-cancelled { background: #FFEBEE; color: #C62828; }
+
+    .no-orders {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+        .profile-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="profile-section">
+        <h1>Мій профіль</h1>
+        <p class="profile-subtitle">Керуйте вашими даними та переглядайте замовлення</p>
+
+        <div class="profile-grid">
+            <!-- Sidebar -->
+            <div class="profile-sidebar">
+                <div class="profile-avatar">{{ user.username|first|upper }}</div>
+                <div class="profile-username">{{ user.username }}</div>
+                <div class="profile-email">{{ user.email }}</div>
+                <ul class="profile-nav">
+                    <li><a href="{% url 'accounts:profile' %}" class="active">&#128100; Профіль</a></li>
+                    <li><a href="{% url 'orders:order_list' %}">&#128722; Мої замовлення</a></li>
+                    <li><a href="{% url 'orders:cart' %}">&#128717; Кошик</a></li>
+                    <li><a href="{% url 'accounts:logout' %}">&#10132; Вийти</a></li>
+                </ul>
+            </div>
+
+            <!-- Main -->
+            <div>
+                <!-- Edit profile form -->
+                <div class="profile-card">
+                    <h2>Контактна інформація</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>{{ form.phone_number.label }}</label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <ul class="errorlist">{% for e in form.phone_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label>{{ form.city.label }}</label>
+                                {{ form.city }}
+                                {% if form.city.errors %}
+                                    <ul class="errorlist">{% for e in form.city.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>{{ form.country.label }}</label>
+                                {{ form.country }}
+                                {% if form.country.errors %}
+                                    <ul class="errorlist">{% for e in form.country.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label>{{ form.postal_code.label }}</label>
+                                {{ form.postal_code }}
+                                {% if form.postal_code.errors %}
+                                    <ul class="errorlist">{% for e in form.postal_code.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>{{ form.address.label }}</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <ul class="errorlist">{% for e in form.address.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                    </form>
+                </div>
+
+                <!-- Recent orders -->
+                <div class="profile-card">
+                    <h2>Останні замовлення</h2>
+                    {% if recent_orders %}
+                        <table class="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Дата</th>
+                                    <th>Сума</th>
+                                    <th>Статус</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                    <tr>
+                                        <td><strong>{{ order.order_number }}</strong></td>
+                                        <td>{{ order.created_at|date:"d.m.Y" }}</td>
+                                        <td>{{ order.total }} ₴</td>
+                                        <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                                        <td><a href="{% url 'orders:order_detail' order.order_number %}">Деталі →</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 1rem; text-align: right;">
+                            <a href="{% url 'orders:order_list' %}" class="btn btn-outline btn-sm">Всі замовлення</a>
+                        </div>
+                    {% else %}
+                        <div class="no-orders">
+                            Замовлень ще немає. <a href="{% url 'catalog:wine_list' %}">Перейти до каталогу</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

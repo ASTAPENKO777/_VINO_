@@ -3,7 +3,6 @@ from .models import Review
 
 
 class ReviewForm(forms.ModelForm):
-    """Review submission form with validation"""
     class Meta:
         model = Review
         fields = ['rating', 'title', 'comment']
@@ -13,7 +12,6 @@ class ReviewForm(forms.ModelForm):
         }
 
     def clean_comment(self):
-        """Validate comment length and content"""
         comment = self.cleaned_data.get('comment')
         if len(comment) < 10:
             raise forms.ValidationError("Review must be at least 10 characters long.")
@@ -22,7 +20,6 @@ class ReviewForm(forms.ModelForm):
         return comment
 
     def clean_title(self):
-        """Validate title"""
         title = self.cleaned_data.get('title')
         if len(title) < 5:
             raise forms.ValidationError("Title must be at least 5 characters long.")

@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
-    """Create UserProfile when User is created"""
     if created:
         UserProfile.objects.create(user=instance)
         logger.info(f"User profile created for user: {instance.username}")
@@ -17,6 +16,5 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    """Save UserProfile when User is saved"""
     if hasattr(instance, 'profile'):
         instance.profile.save()

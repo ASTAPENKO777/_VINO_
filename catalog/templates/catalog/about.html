@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Про нас — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-hero {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        color: white;
+        padding: 5rem 0 4rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(ellipse at center, rgba(201,169,110,0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .about-hero h1 {
+        font-size: 3rem;
+        color: white;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    .about-hero p {
+        font-size: 1.1rem;
+        color: rgba(255,255,255,0.8);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.8;
+        position: relative;
+    }
+    .about-hero .accent-line {
+        width: 60px;
+        height: 3px;
+        background: var(--accent);
+        margin: 1rem auto;
+    }
+
+    .team-section {
+        padding: 5rem 0 4rem;
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: 1fr 520px 1fr;
+        gap: 3rem;
+        align-items: center;
+        margin-top: 3.5rem;
+    }
+
+    .member-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+    }
+    .member-info.align-right {
+        text-align: right;
+        align-items: flex-end;
+    }
+    .member-info.align-left {
+        text-align: left;
+        align-items: flex-start;
+    }
+
+    .member-role {
+        display: inline-block;
+        background: var(--accent);
+        color: var(--primary-dark);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        padding: 0.3rem 1rem;
+        border-radius: 20px;
+    }
+    .member-name {
+        font-size: 1.9rem;
+        color: var(--text);
+        line-height: 1.2;
+        margin: 0;
+    }
+    .member-story {
+        color: var(--text-light);
+        line-height: 1.8;
+        font-size: 0.9rem;
+    }
+    .member-story p + p { margin-top: 0.7rem; }
+
+    .member-quote {
+        padding: 0.8rem 1.1rem;
+        background: var(--bg-alt);
+        font-style: italic;
+        color: var(--text);
+        font-size: 0.88rem;
+        line-height: 1.6;
+        border-radius: var(--radius);
+    }
+    .member-info.align-right .member-quote {
+        border-right: 4px solid var(--accent);
+        border-radius: var(--radius) 0 0 var(--radius);
+    }
+    .member-info.align-left .member-quote {
+        border-left: 4px solid var(--accent);
+        border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    .member-skills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+    .skill-tag {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.7rem;
+        border-radius: 20px;
+    }
+
+    .team-photo-wrap {
+        position: relative;
+        display: flex;
+        justify-content: center;
+    }
+    .team-photo-wrap::before {
+        content: '';
+        position: absolute;
+        top: -14px;
+        left: -14px;
+        right: -14px;
+        bottom: -14px;
+        border: 2px solid var(--accent);
+        border-radius: var(--radius-lg);
+        opacity: 0.35;
+    }
+    .team-photo-wrap img {
+        width: 100%;
+        max-width: 520px;
+        height: 380px;
+        object-fit: contain;
+        object-position: center;
+        border-radius: var(--radius-lg);
+        display: block;
+        filter: drop-shadow(0 24px 48px rgba(114,47,55,0.28));
+    }
+    .team-photo-caption {
+        text-align: center;
+        margin-top: 2.2rem;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .team-photo-caption strong {
+        display: block;
+        font-family: 'Playfair Display', serif;
+        font-size: 1rem;
+        color: var(--text-light);
+        text-transform: none;
+        letter-spacing: 0;
+        margin-bottom: 0.2rem;
+    }
+
+    .values-section {
+        background: var(--bg-alt);
+        padding: 4rem 0;
+    }
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+    .value-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border);
+        transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .value-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+    .value-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.2rem;
+        color: white;
+    }
+    .value-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+    }
+    .value-card p {
+        font-size: 0.87rem;
+        color: var(--text-light);
+        line-height: 1.7;
+    }
+
+    @media (max-width: 1024px) {
+        .team-grid {
+            grid-template-columns: 1fr 420px 1fr;
+            gap: 2rem;
+        }
+        .team-photo-wrap img { height: 540px; }
+    }
+    @media (max-width: 800px) {
+        .team-grid {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+        .member-info.align-right {
+            text-align: left;
+            align-items: flex-start;
+        }
+        .member-info.align-right .member-quote {
+            border-right: none;
+            border-left: 4px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .team-photo-wrap img { height: 460px; }
+        .values-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+        .about-hero h1 { font-size: 2rem; }
+        .member-name { font-size: 1.6rem; }
+        .values-grid { grid-template-columns: 1fr; }
+        .team-photo-wrap img { height: 300px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="about-hero">
+    <div class="container">
+        <h1>Про нас</h1>
+        <div class="accent-line"></div>
+        <p>
+            Ми — двоє ентузіастів, які об'єднали любов до вина та технологій,
+            щоб створити найзручніший винний маркетплейс в Україні.
+        </p>
+    </div>
+</section>
+
+<section class="team-section">
+    <div class="container">
+
+        <h2 class="section-title">Наша команда</h2>
+        <div class="section-divider"></div>
+        <p class="section-subtitle">Люди, що стоять за VINØ</p>
+
+        <div class="team-grid">
+
+            <div class="member-info align-right">
+                <span class="member-role">Founder & Lead Designer</span>
+                <h2 class="member-name">Михайло Астапенко</h2>
+                <div class="member-story">
+                    <p>
+                        Засновник і ідейний натхненник VINØ. Саме Михайло придумав
+                        концепцію проєкту, визначив напрямок розвитку та зібрав
+                        команду, яка втілила цю ідею в реальність.
+                    </p>
+                    <p>
+                        Відповідає за дизайн, продуктове бачення та стратегію — він
+                        той, хто вирішує, яким буде VINØ сьогодні і завтра.
+                    </p>
+                </div>
+                <div class="member-quote">
+                    «Дизайн — це не те, як виглядає продукт.
+                    Дизайн — це те, як він працює.»
+                </div>
+                <div class="member-skills">
+                    <span class="skill-tag">HTML/CSS</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">UI/UX</span>
+                    <span class="skill-tag">Figma</span>
+                </div>
+            </div>
+
+            <div class="team-photo-wrap">
+                <img src="{% static 'images/team.png' %}" alt="Команда VINØ">
+            </div>
+
+            <div class="member-info align-left">
+                <span class="member-role">Co-Founder & Backend</span>
+                <h2 class="member-name">Данило Скрипець</h2>
+                <div class="member-story">
+                    <p>
+                        Свій шлях у програмуванні Данило розпочав зі студентської лави,
+                        коли перший рядок коду на Python відкрив перед ним безмежний
+                        світ можливостей. Він побудував надійну архітектуру
+                        всього маркетплейсу.
+                    </p>
+                    <p>
+                        Паралельно з кодом Данило відкрив для себе світ виноробства —
+                        саме це поєднання надихнуло його на ідею VINØ.
+                    </p>
+                </div>
+                <div class="member-quote">
+                    «Хороший код, як добре вино — складний у приготуванні,
+                    але простий у насолоді.»
+                </div>
+                <div class="member-skills">
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">Django</span>
+                    <span class="skill-tag">PostgreSQL</span>
+                    <span class="skill-tag">REST API</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="team-photo-caption">
+            <strong>Михайло та Данило — засновники VINØ</strong>
+            Київ, 2026
+        </div>
+
+    </div>
+</section>
+
+<section class="values-section">
+    <div class="container">
+        <h2 class="section-title">Наші цінності</h2>
+        <div class="section-divider"></div>
+        <p class="section-subtitle">Принципи, якими ми керуємось</p>
+
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5z"/></svg>
+                </div>
+                <h3>Якість понад усе</h3>
+                <p>Кожне вино в нашому каталозі пройшло ретельний відбір. Ми пробуємо перш ніж пропонувати.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+                <h3>Довіра та чесність</h3>
+                <p>Жодних прихованих комісій та маніпуляцій. Ми будуємо відносини на взаємній повазі.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                </div>
+                <h3>Різноманіття</h3>
+                <p>Від іспанської Ріохи до грузинського Саперові — ми відкриваємо винний світ без кордонів.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

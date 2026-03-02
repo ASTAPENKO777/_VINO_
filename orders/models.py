@@ -6,49 +6,52 @@ from decimal import Decimal
 
 
 class Order(models.Model):
-    """Customer orders"""
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
-        ('processing', 'Processing'),
-        ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
-        ('cancelled', 'Cancelled'),
+        ('pending', 'Очікує'),
+        ('confirmed', 'Підтверджено'),
+        ('processing', 'Обробляється'),
+        ('shipped', 'Відправлено'),
+        ('delivered', 'Доставлено'),
+        ('cancelled', 'Скасовано'),
     ]
 
-    # Relationships
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
 
-    # Order details
     order_number = models.CharField(max_length=20, unique=True, editable=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
-    # Pricing
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
-    # Shipping information
     shipping_address = models.TextField()
     shipping_city = models.CharField(max_length=100)
     shipping_country = models.CharField(max_length=100)
     shipping_postal_code = models.CharField(max_length=20)
 
-    # Contact
     phone_number = models.CharField(max_length=20)
 
-    # Notes
+    last_name = models.CharField(max_length=100, verbose_name='Прізвище', default='')
+    first_name = models.CharField(max_length=100, verbose_name='Ім\'я', default='')
+    patronymic = models.CharField(max_length=100, blank=True, default='', verbose_name='По батькові')
+
     notes = models.TextField(blank=True, null=True)
 
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = 'Order'
-        verbose_name_plural = 'Orders'
+        verbose_name = 'Замовлення'
+        verbose_name_plural = 'Замовлення'
         ordering = ['-created_at']
+
+    @property
+    def recipient_full_name(self):
+        parts = [self.last_name, self.first_name]
+        if self.patronymic:
+            parts.append(self.patronymic)
+        return ' '.join(parts)
 
     def __str__(self):
         return f"Order {self.order_number} by {self.user.username}"
@@ -60,28 +63,24 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def calculate_totals(self):
-        """Recalculate order totals from items"""
         self.subtotal = sum(item.get_total_price() for item in self.items.all())
-        self.tax = self.subtotal * Decimal('0.10')  # 10% tax
+        self.tax = self.subtotal * Decimal('0.10')
         self.total = self.subtotal + self.tax + self.shipping_cost
         self.save()
 
 
 class OrderItem(models.Model):
-    """Individual items in an order"""
-    # Relationships
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     wine = models.ForeignKey(Wine, on_delete=models.PROTECT, related_name='order_items')
 
-    # Item details
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Price at time of purchase
+    price = models.DecimalField(max_digits=10, decimal_places=2)  
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Order Item'
-        verbose_name_plural = 'Order Items'
+        verbose_name = 'Позиція замовлення'
+        verbose_name_plural = 'Позиції замовлення'
         unique_together = ['order', 'wine']
 
     def __str__(self):
@@ -92,14 +91,13 @@ class OrderItem(models.Model):
 
 
 class Cart(models.Model):
-    """Shopping cart for logged-in users"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = 'Cart'
-        verbose_name_plural = 'Carts'
+        verbose_name = 'Кошик'
+        verbose_name_plural = 'Кошики'
 
     def __str__(self):
         return f"Cart of {self.user.username}"
@@ -111,20 +109,18 @@ class Cart(models.Model):
         return sum(item.quantity for item in self.items.all())
 
     def clear(self):
-        """Remove all items from cart"""
         self.items.all().delete()
 
 
 class CartItem(models.Model):
-    """Items in shopping cart"""
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     wine = models.ForeignKey(Wine, on_delete=models.CASCADE, related_name='cart_items')
     quantity = models.IntegerField(validators=[MinValueValidator(1)], default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Cart Item'
-        verbose_name_plural = 'Cart Items'
+        verbose_name = 'Позиція кошика'
+        verbose_name_plural = 'Позиції кошика'
         unique_together = ['cart', 'wine']
 
     def __str__(self):

@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}Замовлення оформлено — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .confirmation-section {
+        padding: 3rem 0 5rem;
+        max-width: 760px;
+        margin: 0 auto;
+    }
+    .confirmation-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .confirmation-icon {
+        width: 80px;
+        height: 80px;
+        background: #E8F5E9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.2rem;
+        font-size: 2.4rem;
+    }
+    .confirmation-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--success);
+    }
+    .confirmation-header p {
+        color: var(--text-light);
+        font-size: 1rem;
+    }
+    .order-number-badge {
+        display: inline-block;
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.5rem 1.2rem;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--primary);
+        margin-top: 0.8rem;
+    }
+
+    .info-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.2rem;
+    }
+    .info-card h2 {
+        font-size: 1.05rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.7rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem 2rem;
+    }
+    .info-item label {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.2rem;
+    }
+    .info-item span {
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .order-item-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .order-item-row:last-child { border-bottom: none; }
+    .order-item-img {
+        width: 56px;
+        height: 56px;
+        background: var(--bg-alt);
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .order-item-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .order-item-img .placeholder { font-size: 1.6rem; opacity: 0.3; }
+    .order-item-info { flex: 1; }
+    .order-item-info strong { display: block; font-size: 0.95rem; }
+    .order-item-info small { color: var(--text-muted); font-size: 0.8rem; }
+    .order-item-price {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        color: var(--primary);
+        white-space: nowrap;
+    }
+
+    .totals-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-bottom: 0.4rem;
+    }
+    .totals-total {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-top: 0.8rem;
+        padding-top: 0.8rem;
+        border-top: 2px solid var(--border);
+    }
+    .totals-total span:last-child {
+        font-family: 'Playfair Display', serif;
+        color: var(--primary);
+    }
+
+    .confirmation-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.7rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #FFF8E1;
+        color: #E65100;
+    }
+
+    @media (max-width: 600px) {
+        .info-grid { grid-template-columns: 1fr; }
+        .confirmation-actions { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="confirmation-section">
+        <div class="confirmation-header">
+            <div class="confirmation-icon">✓</div>
+            <h1>Замовлення прийнято!</h1>
+            <p>Дякуємо за покупку. Ми зв'яжемось з вами найближчим часом для підтвердження.</p>
+            <div class="order-number-badge">{{ order.order_number }}</div>
+        </div>
+
+        <!-- Order info -->
+        <div class="info-card">
+            <h2>Інформація про замовлення</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Номер замовлення</label>
+                    <span>{{ order.order_number }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Статус</label>
+                    <span class="status-badge">На розгляді</span>
+                </div>
+                <div class="info-item" style="grid-column: 1/-1;">
+                    <label>Отримувач</label>
+                    <span>{{ order.recipient_full_name }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Телефон</label>
+                    <span>{{ order.phone_number }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Дата оформлення</label>
+                    <span>{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping -->
+        <div class="info-card">
+            <h2>Адреса доставки</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Місто</label>
+                    <span>{{ order.shipping_city }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Індекс</label>
+                    <span>{{ order.shipping_postal_code }}</span>
+                </div>
+                <div class="info-item" style="grid-column: 1/-1;">
+                    <label>Адреса</label>
+                    <span>{{ order.shipping_address }}, {{ order.shipping_country }}</span>
+                </div>
+                {% if order.notes %}
+                    <div class="info-item" style="grid-column: 1/-1;">
+                        <label>Примітки</label>
+                        <span>{{ order.notes }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="info-card">
+            <h2>Товари</h2>
+            {% for item in items %}
+                <div class="order-item-row">
+                    <div class="order-item-img">
+                        {% if item.wine.photo %}
+                            <img src="{{ item.wine.photo.url }}" alt="{{ item.wine.name }}">
+                        {% else %}
+                            <span class="placeholder">&#127863;</span>
+                        {% endif %}
+                    </div>
+                    <div class="order-item-info">
+                        <strong>{{ item.wine.name }}</strong>
+                        <small>{{ item.quantity }} шт. × {{ item.price }} ₴</small>
+                    </div>
+                    <div class="order-item-price">{{ item.get_total_price }} ₴</div>
+                </div>
+            {% endfor %}
+
+            <div style="margin-top: 1rem;">
+                <div class="totals-row">
+                    <span>Підсумок</span>
+                    <span>{{ order.subtotal }} ₴</span>
+                </div>
+                <div class="totals-row">
+                    <span>ПДВ (10%)</span>
+                    <span>{{ order.tax }} ₴</span>
+                </div>
+                <div class="totals-row">
+                    <span>Доставка</span>
+                    <span>{% if order.shipping_cost == 0 %}Безкоштовно{% else %}{{ order.shipping_cost }} ₴{% endif %}</span>
+                </div>
+                <div class="totals-total">
+                    <span>До сплати</span>
+                    <span>{{ order.total }} ₴</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirmation-actions">
+            <a href="{% url 'orders:order_list' %}" class="btn btn-outline">Мої замовлення</a>
+            <a href="{% url 'catalog:wine_list' %}" class="btn btn-primary">Продовжити покупки</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

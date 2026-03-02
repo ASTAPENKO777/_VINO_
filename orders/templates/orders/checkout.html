@@ -1,0 +1,847 @@
+{% extends 'base.html' %}
+
+{% block title %}Оформлення замовлення — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-section {
+        padding: 2rem 0 4rem;
+    }
+    .checkout-section h1 {
+        font-size: 2rem;
+        margin-bottom: 0.4rem;
+    }
+    .checkout-breadcrumb {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-bottom: 2rem;
+    }
+    .checkout-breadcrumb a { color: var(--primary); }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .checkout-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .checkout-card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1.4rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    .checkout-card h2 .step-num {
+        width: 26px; height: 26px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Inter', sans-serif;
+        flex-shrink: 0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    .form-group {
+        margin-bottom: 1.1rem;
+    }
+    .form-group label {
+        display: block;
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: var(--text-light);
+        margin-bottom: 0.4rem;
+    }
+    .form-group label .required { color: var(--error); margin-left: 2px; }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.65rem 0.9rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text);
+        background: var(--bg);
+        transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(114,47,55,0.08);
+    }
+    .form-group .errorlist {
+        list-style: none;
+        color: var(--error);
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    /* ── Autocomplete ── */
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-wrap input { padding-right: 2.4rem; }
+    .ac-spinner {
+        position: absolute; right: 0.7rem; top: 50%;
+        transform: translateY(-50%);
+        width: 16px; height: 16px;
+        border: 2px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: acSpin 0.6s linear infinite;
+        display: none;
+    }
+    .autocomplete-wrap.loading .ac-spinner { display: block; }
+    @keyframes acSpin { to { transform: translateY(-50%) rotate(360deg); } }
+
+    .ac-dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0; right: 0;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        max-height: 280px;
+        overflow-y: auto;
+        z-index: 200;
+        display: none;
+    }
+    .ac-dropdown.open { display: block; }
+    .ac-item {
+        padding: 0.6rem 0.9rem;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        transition: background var(--transition);
+    }
+    .ac-item:last-child { border-bottom: none; }
+    .ac-item:hover, .ac-item.focused { background: var(--bg-alt); }
+    .ac-item-main { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .ac-item-sub  { font-size: 0.78rem; color: var(--text-muted); margin-top: 1px; }
+    .ac-empty { padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+
+    /* ── City chip ── */
+    .city-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #FFF5F5;
+        border: 1px solid var(--primary);
+        border-radius: 20px;
+        padding: 0.3rem 0.8rem 0.3rem 0.6rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin-top: 0.4rem;
+        cursor: default;
+    }
+    .city-chip-clear {
+        cursor: pointer;
+        opacity: 0.6;
+        font-size: 1rem;
+        line-height: 1;
+        margin-left: 0.2rem;
+    }
+    .city-chip-clear:hover { opacity: 1; }
+
+    /* ── Warehouse list ── */
+    .warehouse-search-wrap {
+        position: relative;
+        margin-bottom: 0;
+    }
+    .warehouse-search-wrap input {
+        padding-left: 2.2rem;
+        border-radius: var(--radius) var(--radius) 0 0;
+        border-bottom-color: transparent;
+    }
+    .warehouse-search-wrap input:focus {
+        border-bottom-color: transparent;
+        border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .wsearch-icon {
+        position: absolute; left: 0.75rem; top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted); font-size: 0.9rem;
+        pointer-events: none;
+    }
+    .warehouse-list {
+        border: 1px solid var(--border);
+        border-radius: 0 0 var(--radius) var(--radius);
+        max-height: 300px;
+        overflow-y: auto;
+        background: white;
+    }
+    .warehouse-item {
+        padding: 0.65rem 0.9rem;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: flex-start;
+        gap: 0.7rem;
+        transition: background var(--transition);
+    }
+    .warehouse-item:last-child { border-bottom: none; }
+    .warehouse-item:hover { background: var(--bg-alt); }
+    .warehouse-item.selected {
+        background: #FFF5F5;
+        border-left: 3px solid var(--primary);
+        padding-left: calc(0.9rem - 3px);
+    }
+    .wh-num {
+        flex-shrink: 0;
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--primary);
+        padding: 0.1rem 0.45rem;
+        margin-top: 2px;
+        white-space: nowrap;
+    }
+    .warehouse-item.selected .wh-num {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    .wh-desc  { font-size: 0.85rem; color: var(--text); line-height: 1.4; }
+    .wh-addr  { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
+    .wh-info  { font-size: 0 .73rem; color: var(--text-muted); }
+    .wh-msg   { padding: 1.2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+
+    /* ── Warehouse chip (selected state) ── */
+    .wh-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: #FFF5F5;
+        border: 1px solid var(--primary);
+        border-radius: var(--radius);
+        padding: 0.65rem 0.9rem;
+        margin-top: 0.5rem;
+    }
+    .wh-chip-num {
+        flex-shrink: 0;
+        background: var(--primary);
+        color: white;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.15rem 0.5rem;
+    }
+    .wh-chip-desc {
+        flex: 1;
+        font-size: 0.84rem;
+        color: var(--text);
+        line-height: 1.35;
+    }
+    .wh-chip-clear {
+        flex-shrink: 0;
+        cursor: pointer;
+        opacity: 0.5;
+        font-size: 1rem;
+        line-height: 1;
+        margin-left: 0.2rem;
+        color: var(--primary);
+        transition: opacity var(--transition);
+    }
+    .wh-chip-clear:hover { opacity: 1; }
+
+    /* ── NP badge ── */
+    .np-badge {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        background: #E8F4FD; border: 1px solid #BEE0F5;
+        border-radius: 6px; padding: 0.3rem 0.75rem;
+        font-size: 0.78rem; color: #1565C0; font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    /* ── Order summary ── */
+    .order-summary {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        position: sticky;
+        top: 100px;
+    }
+    .order-summary h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .summary-item {
+        display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem;
+    }
+    .summary-item-img {
+        width: 48px; height: 48px; background: var(--bg-alt); border-radius: var(--radius);
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden; flex-shrink: 0;
+    }
+    .summary-item-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .summary-item-img .placeholder { font-size: 1.4rem; opacity: 0.3; }
+    .summary-item-info { flex: 1; min-width: 0; }
+    .summary-item-name { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .summary-item-qty  { font-size: 0.78rem; color: var(--text-muted); }
+    .summary-item-price { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 0.95rem; color: var(--primary); white-space: nowrap; }
+    .summary-divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+    .summary-row   { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.88rem; color: var(--text-light); }
+    .summary-total { display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--border); font-weight: 700; font-size: 1.1rem; }
+    .summary-total span:last-child { font-family: 'Playfair Display', serif; color: var(--primary); }
+    .place-order-btn { width: 100%; margin-top: 1.2rem; padding: 0.9rem; font-size: 1rem; }
+
+    @media (max-width: 900px) {
+        .checkout-grid { grid-template-columns: 1fr; }
+        .order-summary { position: static; }
+    }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="checkout-section">
+        <h1>Оформлення замовлення</h1>
+        <p class="checkout-breadcrumb">
+            <a href="{% url 'orders:cart' %}">Кошик</a> &rsaquo; Оформлення
+        </p>
+
+        <form method="post" id="checkoutForm">
+            {% csrf_token %}
+            {# Hidden fields populated by JS from Nova Poshta autocomplete #}
+            {{ form.shipping_city.as_hidden }}
+            {{ form.shipping_address.as_hidden }}
+            {{ form.shipping_postal_code.as_hidden }}
+            <input type="hidden" name="shipping_country" value="Україна">
+
+            <div class="checkout-grid">
+
+                <!-- ══ LEFT: shipping ══ -->
+                <div>
+
+                    <!-- Step 1 · Contacts -->
+                    <div class="checkout-card">
+                        <h2><span class="step-num">1</span> Дані отримувача</h2>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ form.last_name.id_for_label }}">
+                                    {{ form.last_name.label }} <span class="required">*</span>
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <ul class="errorlist">{% for e in form.last_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.first_name.id_for_label }}">
+                                    {{ form.first_name.label }} <span class="required">*</span>
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <ul class="errorlist">{% for e in form.first_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ form.patronymic.id_for_label }}">
+                                    {{ form.patronymic.label }}
+                                    <span style="font-size:0.75rem;color:var(--text-muted);">(необов'язково)</span>
+                                </label>
+                                {{ form.patronymic }}
+                                {% if form.patronymic.errors %}
+                                    <ul class="errorlist">{% for e in form.patronymic.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="{{ form.phone_number.id_for_label }}">
+                                    {{ form.phone_number.label }} <span class="required">*</span>
+                                </label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <ul class="errorlist">{% for e in form.phone_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 · City search (Nova Poshta) -->
+                    <div class="checkout-card">
+                        <h2><span class="step-num">2</span> Місто</h2>
+
+                        <div class="np-badge">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Пошук через API Нової Пошти
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Місто або населений пункт <span class="required">*</span></label>
+                            <div class="autocomplete-wrap" id="cityAcWrap">
+                                <input type="text" id="citySearchInput"
+                                       autocomplete="off" spellcheck="false"
+                                       placeholder="Почніть вводити назву... (мін. 2 символи)">
+                                <div class="ac-spinner"></div>
+                                <div class="ac-dropdown" id="cityDropdown"></div>
+                            </div>
+                            <div id="cityChip"></div>
+                            {% if form.shipping_city.errors %}
+                                <ul class="errorlist">{% for e in form.shipping_city.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Step 3 · Warehouse (shown after city selected) -->
+                    <div class="checkout-card" id="warehouseCard" style="display:none;">
+                        <h2><span class="step-num">3</span> Відділення Нової Пошти</h2>
+                        <div class="warehouse-search-wrap">
+                            <span class="wsearch-icon">&#128269;</span>
+                            <input type="text" id="warehouseFilter"
+                                   autocomplete="off"
+                                   placeholder="Пошук за номером або адресою...">
+                        </div>
+                        <div class="warehouse-list" id="warehouseList">
+                            <div class="wh-msg">Завантаження...</div>
+                        </div>
+                        <div id="whChip"></div>
+                        {% if form.shipping_address.errors %}
+                            <ul class="errorlist" style="margin-top:0.4rem;">{% for e in form.shipping_address.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                        {% endif %}
+                    </div>
+
+                    <!-- Fallback: manual address -->
+                    <div class="checkout-card">
+                        <h2>
+                            <span class="step-num" style="background:var(--text-muted);font-size:0.65rem;">або</span>
+                            Адреса вручну
+                        </h2>
+                        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;">
+                            Якщо ваше місто не знайдено через Нову Пошту — введіть дані нижче.
+                        </p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Місто <span class="required">*</span></label>
+                                <input type="text" id="manualCity" placeholder="Ваше місто">
+                            </div>
+                            <div class="form-group">
+                                <label>Поштовий індекс</label>
+                                <input type="text" id="manualPostal" placeholder="01001">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>Адреса доставки <span class="required">*</span></label>
+                            <input type="text" id="manualAddress"
+                                   placeholder="вул. Хрещатик, 1, кв. 10">
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="checkout-card">
+                        <h2>
+                            <span class="step-num" style="background:var(--accent);color:var(--primary-dark);">+</span>
+                            Примітки
+                        </h2>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="message error" style="margin-bottom:1rem;">
+                            {% for e in form.non_field_errors %}{{ e }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- ══ RIGHT: Order summary ══ -->
+                <div class="order-summary">
+                    <h2>Ваше замовлення</h2>
+
+                    {% for item in items %}
+                        <div class="summary-item">
+                            <div class="summary-item-img">
+                                {% if item.wine.photo %}
+                                    <img src="{{ item.wine.photo.url }}" alt="{{ item.wine.name }}">
+                                {% else %}
+                                    <span class="placeholder">&#127863;</span>
+                                {% endif %}
+                            </div>
+                            <div class="summary-item-info">
+                                <div class="summary-item-name">{{ item.wine.name }}</div>
+                                <div class="summary-item-qty">{{ item.quantity }} × {{ item.wine.price }} ₴</div>
+                            </div>
+                            <div class="summary-item-price">{{ item.get_total_price }} ₴</div>
+                        </div>
+                    {% endfor %}
+
+                    <hr class="summary-divider">
+
+                    <div class="summary-row">
+                        <span>Товари</span>
+                        <span>{{ subtotal }} ₴</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>ПДВ (10%)</span>
+                        <span>{{ tax }} ₴</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка НП</span>
+                        <span style="color:var(--success);">За тарифами НП</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>До сплати</span>
+                        <span>{{ total }} ₴</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary place-order-btn">
+                        Підтвердити замовлення
+                    </button>
+                    <a href="{% url 'orders:cart' %}" class="btn btn-outline"
+                       style="width:100%;margin-top:0.6rem;display:block;text-align:center;">
+                        Повернутись до кошика
+                    </a>
+                </div>
+
+            </div><!-- .checkout-grid -->
+        </form>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    'use strict';
+
+    const CITIES_URL     = '{% url "orders:np_cities" %}';
+    const WAREHOUSES_URL = '{% url "orders:np_warehouses" %}';
+
+    /* ── DOM refs ── */
+    const cityInput       = document.getElementById('citySearchInput');
+    const cityDropdown    = document.getElementById('cityDropdown');
+    const cityAcWrap      = document.getElementById('cityAcWrap');
+    const cityChipEl      = document.getElementById('cityChip');
+
+    const hiddenCity      = document.getElementById('id_shipping_city');
+    const hiddenAddress   = document.getElementById('id_shipping_address');
+    const hiddenPostal    = document.getElementById('id_shipping_postal_code');
+
+    const warehouseCard   = document.getElementById('warehouseCard');
+    const warehouseList   = document.getElementById('warehouseList');
+    const warehouseFilter = document.getElementById('warehouseFilter');
+
+    const manualCity      = document.getElementById('manualCity');
+    const manualPostal    = document.getElementById('manualPostal');
+    const manualAddress   = document.getElementById('manualAddress');
+
+    let debounceTimer     = null;
+    let allWarehouses     = [];
+    let selectedWhRef     = '';
+    let npCityActive      = false;   // true = city chosen via NP autocomplete
+
+    /* ══════════════════════════════════════
+       CITY AUTOCOMPLETE
+    ══════════════════════════════════════ */
+
+    cityInput.addEventListener('input', function () {
+        const q = this.value.trim();
+        clearTimeout(debounceTimer);
+        closeDropdown();
+        if (q.length < 2) return;
+        debounceTimer = setTimeout(() => fetchCities(q), 300);
+    });
+
+    cityInput.addEventListener('keydown', function (e) {
+        const items = cityDropdown.querySelectorAll('.ac-item');
+        const focused = cityDropdown.querySelector('.ac-item.focused');
+        if (!items.length) return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            moveFocus(focused, items, 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            moveFocus(focused, items, -1);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (focused) focused.click();
+        } else if (e.key === 'Escape') {
+            closeDropdown();
+        }
+    });
+
+    function moveFocus(cur, items, dir) {
+        if (cur) cur.classList.remove('focused');
+        let idx = cur ? Array.from(items).indexOf(cur) + dir : (dir > 0 ? 0 : items.length - 1);
+        idx = Math.max(0, Math.min(idx, items.length - 1));
+        items[idx].classList.add('focused');
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!cityAcWrap.contains(e.target)) closeDropdown();
+    });
+
+    async function fetchCities(q) {
+        cityAcWrap.classList.add('loading');
+        try {
+            const res  = await fetch(`${CITIES_URL}?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            renderCityDropdown(data.data || []);
+        } catch (_) {
+            renderCityDropdown([]);
+        } finally {
+            cityAcWrap.classList.remove('loading');
+        }
+    }
+
+    function renderCityDropdown(cities) {
+        cityDropdown.innerHTML = '';
+        if (!cities.length) {
+            cityDropdown.innerHTML = '<div class="ac-empty">Нічого не знайдено. Перевірте правопис або введіть адресу вручну нижче.</div>';
+        } else {
+            cities.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'ac-item';
+                const sub = [c.area, c.region].filter(Boolean).join(' · ');
+                el.innerHTML = `
+                    <div class="ac-item-main">${esc(c.name)}</div>
+                    ${sub ? `<div class="ac-item-sub">${esc(sub)}</div>` : ''}
+                `;
+                el.addEventListener('click', () => selectCity(c));
+                cityDropdown.appendChild(el);
+            });
+        }
+        cityDropdown.classList.add('open');
+    }
+
+    function selectCity(city) {
+        npCityActive = true;
+        cityInput.style.display = 'none';
+        hiddenCity.value = city.name;
+
+        // Chip
+        cityChipEl.innerHTML = `
+            <div class="city-chip">
+                📍 ${esc(city.name)}${city.area ? ', ' + esc(city.area) : ''}
+                <span class="city-chip-clear" title="Змінити місто">✕</span>
+            </div>`;
+        cityChipEl.querySelector('.city-chip-clear').addEventListener('click', clearCity);
+
+        closeDropdown();
+
+        // Clear warehouse selection
+        hiddenAddress.value = '';
+        hiddenPostal.value  = '';
+        selectedWhRef = '';
+        allWarehouses = [];
+        warehouseFilter.value = '';
+
+        warehouseCard.style.display = 'block';
+        warehouseList.innerHTML = '<div class="wh-msg">⏳ Завантаження відділень...</div>';
+        fetchWarehouses(city.ref);
+
+        // Also sync manual city field so form never lacks a city
+        manualCity.value = city.name;
+    }
+
+    function clearCity() {
+        npCityActive = false;
+        cityInput.style.display = '';
+        cityInput.value = '';
+        cityChipEl.innerHTML = '';
+        hiddenCity.value    = '';
+        hiddenAddress.value = '';
+        hiddenPostal.value  = '';
+        selectedWhRef = '';
+        allWarehouses = [];
+        warehouseFilter.value = '';
+        warehouseCard.style.display = 'none';
+        manualCity.value = '';
+        cityInput.focus();
+    }
+
+    function closeDropdown() {
+        cityDropdown.classList.remove('open');
+        cityDropdown.innerHTML = '';
+    }
+
+    /* ══════════════════════════════════════
+       WAREHOUSE LOADER & FILTER
+    ══════════════════════════════════════ */
+
+    async function fetchWarehouses(cityRef) {
+        try {
+            const res  = await fetch(`${WAREHOUSES_URL}?city_ref=${encodeURIComponent(cityRef)}`);
+            const data = await res.json();
+            allWarehouses = data.data || [];
+            renderWarehouses(allWarehouses);
+        } catch (_) {
+            warehouseList.innerHTML = '<div class="wh-msg">⚠️ Не вдалося завантажити відділення. Введіть адресу вручну.</div>';
+        }
+    }
+
+    warehouseFilter.addEventListener('input', function () {
+        const q = this.value.toLowerCase().trim();
+        const list = q
+            ? allWarehouses.filter(w =>
+                w.description.toLowerCase().includes(q) ||
+                String(w.number).includes(q) ||
+                (w.short_address || '').toLowerCase().includes(q))
+            : allWarehouses;
+        renderWarehouses(list);
+    });
+
+    function renderWarehouses(list) {
+        if (!list.length) {
+            warehouseList.innerHTML = '<div class="wh-msg">Відділення не знайдено</div>';
+            return;
+        }
+        warehouseList.innerHTML = '';
+        list.forEach(w => {
+            const el = document.createElement('div');
+            el.className = 'warehouse-item' + (w.ref === selectedWhRef ? ' selected' : '');
+            el.dataset.ref = w.ref;
+            el.innerHTML = `
+                <div class="wh-num">№${esc(w.number)}</div>
+                <div>
+                    <div class="wh-desc">${esc(w.description)}</div>
+                    ${w.short_address ? `<div class="wh-addr">${esc(w.short_address)}</div>` : ''}
+                </div>`;
+            el.addEventListener('click', () => selectWarehouse(w));
+            warehouseList.appendChild(el);
+        });
+
+        if (selectedWhRef) {
+            const sel = warehouseList.querySelector(`[data-ref="${selectedWhRef}"]`);
+            if (sel) sel.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    const whChipEl        = document.getElementById('whChip');
+    const warehouseSearch = document.querySelector('.warehouse-search-wrap');
+
+    function selectWarehouse(w) {
+        selectedWhRef = w.ref;
+        hiddenAddress.value = w.short_address || w.description;
+        hiddenPostal.value  = `Відділення №${w.number}`;
+
+        // Clear manual so they don't interfere
+        manualAddress.value = '';
+        manualPostal.value  = '';
+
+        // Show chip, hide search + list
+        whChipEl.innerHTML = `
+            <div class="wh-chip">
+                <span class="wh-chip-num">№${esc(w.number)}</span>
+                <span class="wh-chip-desc">${esc(w.description)}</span>
+                <span class="wh-chip-clear" title="Змінити відділення">✕</span>
+            </div>`;
+        whChipEl.querySelector('.wh-chip-clear').addEventListener('click', clearWarehouse);
+        warehouseSearch.style.display = 'none';
+        warehouseList.style.display   = 'none';
+    }
+
+    function clearWarehouse() {
+        selectedWhRef       = '';
+        hiddenAddress.value = '';
+        hiddenPostal.value  = '';
+        whChipEl.innerHTML  = '';
+        warehouseSearch.style.display = '';
+        warehouseList.style.display   = '';
+        warehouseFilter.value = '';
+        renderWarehouses(allWarehouses);
+    }
+
+    /* ══════════════════════════════════════
+       MANUAL FALLBACK — sync to hidden fields
+       (only if NP city not selected)
+    ══════════════════════════════════════ */
+
+    manualCity.addEventListener('input', function () {
+        if (!npCityActive) hiddenCity.value = this.value;
+    });
+    manualAddress.addEventListener('input', function () {
+        if (!selectedWhRef) hiddenAddress.value = this.value;
+    });
+    manualPostal.addEventListener('input', function () {
+        if (!selectedWhRef) hiddenPostal.value = this.value;
+    });
+
+    /* ══════════════════════════════════════
+       FORM SUBMIT GUARD
+    ══════════════════════════════════════ */
+
+    document.getElementById('checkoutForm').addEventListener('submit', function (e) {
+        const city    = hiddenCity.value.trim();
+        const address = hiddenAddress.value.trim();
+        if (!city) {
+            e.preventDefault();
+            alert('Будь ласка, оберіть місто через пошук Нової Пошти або введіть вручну.');
+            cityInput.focus();
+            return;
+        }
+        if (!address) {
+            e.preventDefault();
+            alert('Будь ласка, оберіть відділення Нової Пошти або введіть адресу вручну.');
+            return;
+        }
+    });
+
+    /* ══════════════════════════════════════
+       RESTORE STATE after server-side error
+    ══════════════════════════════════════ */
+
+    (function restoreState() {
+        const prevCity    = hiddenCity.value.trim();
+        const prevAddress = hiddenAddress.value.trim();
+        const prevPostal  = hiddenPostal.value.trim();
+
+        if (!prevCity) return;
+
+        // Show chip (static — no ref to re-query warehouses)
+        cityInput.style.display = 'none';
+        cityChipEl.innerHTML = `
+            <div class="city-chip">
+                📍 ${esc(prevCity)}
+                <span class="city-chip-clear" title="Змінити місто">✕</span>
+            </div>`;
+        cityChipEl.querySelector('.city-chip-clear').addEventListener('click', clearCity);
+        npCityActive = true;
+
+        if (prevAddress) {
+            manualAddress.value = prevAddress;
+            if (prevPostal) manualPostal.value = prevPostal;
+        }
+        manualCity.value = prevCity;
+    })();
+
+    /* ── XSS-safe escape ── */
+    function esc(s) {
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+})();
+</script>
+{% endblock %}

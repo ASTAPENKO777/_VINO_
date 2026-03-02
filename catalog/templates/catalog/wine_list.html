@@ -1,28 +1,554 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Wine Catalog{% endblock %}
+{% block title %}Каталог вин — VINØ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+        padding: 4rem 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    .hero h1 {
+        font-size: 2.8rem;
+        color: white;
+        margin-bottom: 0.8rem;
+        font-weight: 700;
+    }
+    .hero p {
+        color: rgba(255,255,255,0.8);
+        font-size: 1.1rem;
+        max-width: 500px;
+        margin: 0 auto 1.5rem;
+    }
+    .hero-stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin-top: 2rem;
+    }
+    .hero-stat {
+        text-align: center;
+        color: white;
+    }
+    .hero-stat-number {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+    .hero-stat-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.7;
+        margin-top: 0.2rem;
+    }
+
+    .filters-section {
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 0;
+        position: sticky;
+        top: 68px;
+        z-index: 100;
+        box-shadow: var(--shadow-sm);
+    }
+    .filters-bar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .filters-bar label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-light);
+        white-space: nowrap;
+    }
+    .filter-select {
+        padding: 0.5rem 2rem 0.5rem 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        color: var(--text);
+        background: white;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.6rem center;
+        transition: border-color var(--transition);
+    }
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+    .filters-spacer { flex: 1; }
+    .results-count {
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    .catalog-section {
+        padding: 3rem 0;
+    }
+    .wine-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .wine-card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition);
+        display: flex;
+        flex-direction: column;
+    }
+    .wine-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    .wine-card-img {
+        height: 220px;
+        background: linear-gradient(135deg, var(--bg-alt) 0%, #E8DDD0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .wine-card-img img {
+        max-height: 200px;
+        max-width: 100%;
+        object-fit: contain;
+    }
+    .wine-card-img .wine-placeholder {
+        font-size: 3.5rem;
+        opacity: 0.3;
+    }
+    .wine-badge {
+        position: absolute;
+        top: 0.8rem;
+        left: 0.8rem;
+        background: var(--primary);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.25rem 0.7rem;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .wine-card-body {
+        padding: 1.2rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .wine-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .wine-card-meta span::after {
+        content: '·';
+        margin-left: 0.5rem;
+    }
+    .wine-card-meta span:last-child::after { content: ''; }
+
+    .wine-card-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+    }
+    .wine-card-title a {
+        color: var(--text);
+    }
+    .wine-card-title a:hover {
+        color: var(--primary);
+    }
+
+    .wine-card-year {
+        font-size: 0.85rem;
+        color: var(--text-light);
+        margin-bottom: 0.8rem;
+    }
+
+    .wine-card-rating {
+        color: var(--accent);
+        font-size: 0.85rem;
+        margin-bottom: 0.8rem;
+    }
+    .wine-card-rating .empty { opacity: 0.3; }
+
+    .wine-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 0.8rem;
+        border-top: 1px solid var(--border);
+    }
+    .wine-price {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .wine-price small {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--text-muted);
+    }
+    .wine-stock {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .wine-stock.in-stock { color: var(--success); }
+    .wine-stock.out-of-stock { color: var(--error); }
+
+    .btn-cart {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+        font-family: 'Inter', sans-serif;
+    }
+    .btn-cart:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+    }
+    .btn-delete-wine {
+        background: transparent;
+        color: var(--error);
+        border: 1px solid var(--error);
+        padding: 0.4rem 0.7rem;
+        border-radius: var(--radius);
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+        font-family: 'Inter', sans-serif;
+        margin-top: 0.4rem;
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+    .btn-delete-wine:hover {
+        background: var(--error);
+        color: white;
+    }
+
+    .features-section {
+        background: var(--bg-alt);
+        padding: 3rem 0;
+        margin-top: 2rem;
+    }
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+    .feature-card {
+        text-align: center;
+        padding: 1.5rem 1rem;
+    }
+    .feature-icon {
+        margin-bottom: 0.8rem;
+        display: block;
+    }
+    .feature-icon img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+    }
+    .feature-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+    }
+    .feature-desc {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        line-height: 1.5;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 2.5rem;
+        list-style: none;
+    }
+    .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text);
+        border: 1px solid var(--border);
+        transition: all var(--transition);
+    }
+    .page-link:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    .page-link.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    .page-link.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    .empty-state-icon {
+        font-size: 4rem;
+        opacity: 0.3;
+        margin-bottom: 1rem;
+    }
+    .empty-state h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .empty-state p {
+        color: var(--text-light);
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 { font-size: 2rem; }
+        .hero-stats { gap: 1.5rem; }
+        .hero-stat-number { font-size: 1.5rem; }
+        .features-grid { grid-template-columns: repeat(2, 1fr); }
+        .filters-bar { gap: 0.5rem; }
+        .wine-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    }
+    @media (max-width: 480px) {
+        .hero { padding: 2.5rem 0; }
+        .hero h1 { font-size: 1.6rem; }
+        .hero-stats { flex-direction: column; gap: 1rem; }
+        .features-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .wine-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<h1>Wine Catalog</h1>
-
-{% if wines %}
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
-        {% for wine in wines %}
-            <div style="border: 1px solid #ddd; padding: 1rem; border-radius: 4px;">
-                <h3><a href="{% url 'catalog:wine_detail' slug=wine.slug %}">{{ wine.name }}</a></h3>
-                <p><strong>Type:</strong> {{ wine.wine_type.name }}</p>
-                <p><strong>Country:</strong> {{ wine.country.name }}</p>
-                <p><strong>Year:</strong> {{ wine.year }}</p>
-                <p><strong>Price:</strong> ${{ wine.price }}</p>
-                {% if wine.in_stock %}
-                    <p style="color: green;">In stock: {{ wine.stock_quantity }}</p>
-                {% else %}
-                    <p style="color: red;">Out of stock</p>
-                {% endif %}
+<section class="hero">
+    <div class="container hero-content">
+        <h1>Відкрийте світ вишуканих вин</h1>
+        <p>Ретельно відібрана колекція найкращих вин з найвідоміших виноробних регіонів світу</p>
+        <a href="#catalog" class="btn btn-accent">Переглянути каталог</a>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-number">{{ total_wines|default:"100+" }}</div>
+                <div class="hero-stat-label">Видів вин</div>
             </div>
-        {% endfor %}
+            <div class="hero-stat">
+                <div class="hero-stat-number">{{ total_countries|default:"15+" }}</div>
+                <div class="hero-stat-label">Країн</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-number">{{ total_types|default:"5" }}</div>
+                <div class="hero-stat-label">Категорій</div>
+            </div>
+        </div>
     </div>
-{% else %}
-    <p>No wines available at the moment.</p>
-{% endif %}
+</section>
+
+<section class="filters-section">
+    <div class="container">
+        <form class="filters-bar" method="get" id="filterForm">
+            <label>Фільтри:</label>
+            <select name="wine_type" class="filter-select" onchange="this.form.submit()">
+                <option value="">Усі типи</option>
+                {% for type in wine_types %}
+                    <option value="{{ type.id }}" {% if request.GET.wine_type == type.id|stringformat:"d" %}selected{% endif %}>{{ type.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="country" class="filter-select" onchange="this.form.submit()">
+                <option value="">Усі країни</option>
+                {% for c in countries %}
+                    <option value="{{ c.id }}" {% if request.GET.country == c.id|stringformat:"d" %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="sort" class="filter-select" onchange="this.form.submit()">
+                <option value="">Сортування</option>
+                <option value="price_asc" {% if request.GET.sort == "price_asc" %}selected{% endif %}>Ціна: низька → висока</option>
+                <option value="price_desc" {% if request.GET.sort == "price_desc" %}selected{% endif %}>Ціна: висока → низька</option>
+                <option value="newest" {% if request.GET.sort == "newest" %}selected{% endif %}>Новинки</option>
+                <option value="name" {% if request.GET.sort == "name" %}selected{% endif %}>За назвою</option>
+                <option value="year_desc" {% if request.GET.sort == "year_desc" %}selected{% endif %}>Рік: новіші</option>
+            </select>
+            <div class="filters-spacer"></div>
+            <span class="results-count">Знайдено: {{ wines|length }} вин</span>
+        </form>
+    </div>
+</section>
+
+<section class="catalog-section" id="catalog">
+    <div class="container">
+        {% if wines %}
+            <div class="wine-grid">
+                {% for wine in wines %}
+                    <div class="wine-card">
+                        <a href="{% url 'catalog:wine_detail' slug=wine.slug %}" class="wine-card-img">
+                            {% if wine.photo %}
+                                <img src="{{ wine.photo.url }}" alt="{{ wine.name }}">
+                            {% else %}
+                                <div class="wine-placeholder">&#127863;</div>
+                            {% endif %}
+                            <span class="wine-badge">{{ wine.wine_type.name }}</span>
+                        </a>
+                        <div class="wine-card-body">
+                            <div class="wine-card-meta">
+                                <span>{{ wine.country.name }}</span>
+                                <span>{{ wine.year }}</span>
+                            </div>
+                            <h3 class="wine-card-title">
+                                <a href="{% url 'catalog:wine_detail' slug=wine.slug %}">{{ wine.name }}</a>
+                            </h3>
+                            {% if wine.average_rating %}
+                                <div class="wine-card-rating">
+                                    {% with rating=wine.average_rating %}
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= rating %}&#9733;{% else %}<span class="empty">&#9733;</span>{% endif %}
+                                        {% endfor %}
+                                        <span style="color: var(--text-muted); margin-left: 0.3rem;">{{ rating|floatformat:1 }}</span>
+                                    {% endwith %}
+                                </div>
+                            {% endif %}
+                            <div class="wine-card-footer">
+                                <div>
+                                    <div class="wine-price">{{ wine.price }} ₴</div>
+                                    {% if wine.in_stock %}
+                                        <span class="wine-stock in-stock">&#10003; В наявності</span>
+                                    {% else %}
+                                        <span class="wine-stock out-of-stock">Немає в наявності</span>
+                                    {% endif %}
+                                </div>
+                                {% if wine.in_stock %}
+                                    {% if user.is_authenticated %}
+                                        <form method="post" action="{% url 'orders:add_to_cart' wine.slug %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="btn-cart" title="Додати в кошик">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <a href="{% url 'accounts:login' %}" class="btn-cart" title="Увійдіть, щоб купити">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            {% if user.is_staff %}
+                                <form method="post" action="{% url 'catalog:wine_delete' wine.slug %}" onsubmit="return confirm('Видалити вино «{{ wine.name }}»? Цю дію не можна скасувати.')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-delete-wine">&#128465; Видалити товар</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if is_paginated %}
+                <nav class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.wine_type %}&wine_type={{ request.GET.wine_type }}{% endif %}{% if request.GET.country %}&country={{ request.GET.country }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="page-link">&laquo;</a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        <a href="?page={{ num }}{% if request.GET.wine_type %}&wine_type={{ request.GET.wine_type }}{% endif %}{% if request.GET.country %}&country={{ request.GET.country }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+                           class="page-link {% if page_obj.number == num %}active{% endif %}">{{ num }}</a>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.wine_type %}&wine_type={{ request.GET.wine_type }}{% endif %}{% if request.GET.country %}&country={{ request.GET.country }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" class="page-link">&raquo;</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">&#127863;</div>
+                <h2>Вин не знайдено</h2>
+                <p>Спробуйте змінити фільтри або перегляньте весь каталог</p>
+                <a href="{% url 'catalog:wine_list' %}" class="btn btn-primary">Увесь каталог</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon"><img src="{% static 'images/icon-delivery.png' %}" alt="Доставка"></span>
+                <div class="feature-title">Швидка доставка</div>
+                <div class="feature-desc">Доставляємо по всій Україні за 1-3 дні</div>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon"><img src="{% static 'images/icon-quality.png' %}" alt="Якість"></span>
+                <div class="feature-title">Гарантія якості</div>
+                <div class="feature-desc">Тільки оригінальні вина від перевірених постачальників</div>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon"><img src="{% static 'images/icon-expert.png' %}" alt="Експерт"></span>
+                <div class="feature-title">Експертний підбір</div>
+                <div class="feature-desc">Наші сомельє допоможуть обрати ідеальне вино</div>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon"><img src="{% static 'images/icon-price.png' %}" alt="Ціна"></span>
+                <div class="feature-title">Вигідні ціни</div>
+                <div class="feature-desc">Прямі поставки без посередників</div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
