@@ -4,6 +4,8 @@ from django.core.validators import MinValueValidator
 from catalog.models import Wine
 from decimal import Decimal
 
+from . import pricing
+
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -63,9 +65,14 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def calculate_totals(self):
-        self.subtotal = sum(item.get_total_price() for item in self.items.all())
-        self.tax = self.subtotal * Decimal('0.10')
-        self.total = self.subtotal + self.tax + self.shipping_cost
+        subtotal = sum(
+            (item.get_total_price() for item in self.items.all()),
+            Decimal('0'),
+        )
+        self.subtotal = pricing.money(subtotal)
+        self.tax = pricing.tax_for(self.subtotal)
+        self.shipping_cost = pricing.shipping_for(self.subtotal)
+        self.total = pricing.money(self.subtotal + self.tax + self.shipping_cost)
         self.save()
 
 

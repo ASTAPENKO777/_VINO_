@@ -10,6 +10,7 @@ from django.db import transaction
 from catalog.models import Wine
 from .models import Cart, CartItem, Order, OrderItem
 from .forms import CheckoutForm
+from . import pricing
 
 _NP_URL = 'https://api.novaposhta.ua/v2.0/json/'
 
@@ -185,14 +186,15 @@ def checkout_view(request):
                 order.save()
 
                 for item in items:
+                    # Stock is reduced by the post_save signal on OrderItem
+                    # (orders/signals.py). Doing it here as well decremented
+                    # the quantity twice.
                     OrderItem.objects.create(
                         order=order,
                         wine=item.wine,
                         quantity=item.quantity,
                         price=item.wine.price,
                     )
-                    item.wine.stock_quantity -= item.quantity
-                    item.wine.save()
 
                 order.calculate_totals()
                 cart.clear()
@@ -202,11 +204,10 @@ def checkout_view(request):
     else:
         form = CheckoutForm(initial=initial)
 
-    subtotal = cart.get_total_price()
-    from decimal import Decimal, ROUND_HALF_UP
-    tax = (subtotal * Decimal('0.10')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-    shipping = Decimal('0') if subtotal >= 2000 else Decimal('150')
-    total = subtotal + tax + shipping
+    subtotal = pricing.money(cart.get_total_price())
+    tax = pricing.tax_for(subtotal)
+    shipping = pricing.shipping_for(subtotal)
+    total = pricing.money(subtotal + tax + shipping)
 
     return render(request, 'orders/checkout.html', {
         'form': form,
